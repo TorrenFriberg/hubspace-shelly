@@ -40,7 +40,12 @@ async def initialize_hubspace():
 
     await bridge.initialize()
 
+    # initialize() schedules device discovery in the background.
+    # Wait until those tasks have completed.
+    await bridge.async_block_until_done()
+
     print("Hubspace connection initialized!")
+    print("Hubspace device discovery completed!")
 
 
 def hubspace_worker():
@@ -153,62 +158,19 @@ def off():
 
         return "Failed to turn bulb off.", 500
 
-@app.route("/devices")
-def devices():
-    if not ensure_hubspace_ready():
-        if hubspace_error:
-            return f"Hubspace error: {hubspace_error}", 500
-        return "Hubspace is not ready.", 503
-
-    try:
-        devices = list(bridge.lights.devices)
-
-        print("LIGHT DEVICES:")
-        print(devices)
-
-        return "<br>".join(
-            f"{device.id} — {device.name}"
-            for device in devices
-        )
-
-    except Exception as e:
-        print("DEVICES ERROR:")
-        print(type(e).__name__)
-        print(str(e))
-
-        return f"DEVICES ERROR: {type(e).__name__}: {e}", 500
 
 @app.route("/status")
 def status():
-    print("STATUS ROUTE CALLED")
-    print(f"hubspace_ready = {hubspace_ready.is_set()}")
-    print(f"bridge = {bridge}")
-    print(f"loop = {loop}")
-    print(f"startup_started = {startup_started}")
-    print(f"hubspace_error = {hubspace_error}")
-
     if not ensure_hubspace_ready():
-        print("Hubspace was NOT ready.")
-        print(f"hubspace_error = {hubspace_error}")
-
         if hubspace_error:
             return f"Hubspace error: {hubspace_error}", 500
 
         return "Hubspace is not ready.", 503
-
-    print("Hubspace IS ready.")
 
     try:
         device = bridge.lights.get_device(DEVICE_ID)
 
-        print("DEVICE FOUND!")
-        print(device)
-
         return str(device)
 
     except Exception as e:
-        print("STATUS ERROR:")
-        print(type(e).__name__)
-        print(str(e))
-
         return f"STATUS ERROR: {type(e).__name__}: {e}", 500
