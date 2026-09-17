@@ -73,6 +73,17 @@ threading.Thread(
 def home():
     return "Hubspace-Shelly server is running!"
 
+@app.route("/status")
+def status():
+    if not hubspace_ready.wait(timeout=60):
+        return "Hubspace is not ready.", 503
+
+    try:
+        device = bridge.lights.get_device(DEVICE_ID)
+        return str(device)
+
+    except Exception as e:
+        return f"STATUS ERROR: {type(e).__name__}: {e}", 500
 
 @app.route("/on")
 def on():
