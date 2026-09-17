@@ -156,16 +156,35 @@ def off():
 
 @app.route("/status")
 def status():
+    print("STATUS ROUTE CALLED")
+    print(f"hubspace_ready = {hubspace_ready.is_set()}")
+    print(f"bridge = {bridge}")
+    print(f"loop = {loop}")
+    print(f"startup_started = {startup_started}")
+    print(f"hubspace_error = {hubspace_error}")
+
     if not ensure_hubspace_ready():
+        print("Hubspace was NOT ready.")
+        print(f"hubspace_error = {hubspace_error}")
+
         if hubspace_error:
             return f"Hubspace error: {hubspace_error}", 500
 
         return "Hubspace is not ready.", 503
 
+    print("Hubspace IS ready.")
+
     try:
         device = bridge.lights.get_device(DEVICE_ID)
+
+        print("DEVICE FOUND!")
+        print(device)
 
         return str(device)
 
     except Exception as e:
+        print("STATUS ERROR:")
+        print(type(e).__name__)
+        print(str(e))
+
         return f"STATUS ERROR: {type(e).__name__}: {e}", 500
