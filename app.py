@@ -2,6 +2,7 @@ import os
 import asyncio
 import threading
 import aiohttp
+import atexit
 from flask import Flask
 from aioafero import v1
 
@@ -84,6 +85,16 @@ def start_hubspace():
 
     # Keep the Hubspace event loop alive
     loop.run_forever()
+
+def start_hubspace_thread():
+    thread = threading.Thread(
+        target=start_hubspace,
+        daemon=True
+    )
+    thread.start()
+
+
+start_hubspace_thread()
 
 
 if __name__ == "__main__":
