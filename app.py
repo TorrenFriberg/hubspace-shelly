@@ -153,6 +153,30 @@ def off():
 
         return "Failed to turn bulb off.", 500
 
+@app.route("/devices")
+def devices():
+    if not ensure_hubspace_ready():
+        if hubspace_error:
+            return f"Hubspace error: {hubspace_error}", 500
+        return "Hubspace is not ready.", 503
+
+    try:
+        devices = list(bridge.lights.devices)
+
+        print("LIGHT DEVICES:")
+        print(devices)
+
+        return "<br>".join(
+            f"{device.id} — {device.name}"
+            for device in devices
+        )
+
+    except Exception as e:
+        print("DEVICES ERROR:")
+        print(type(e).__name__)
+        print(str(e))
+
+        return f"DEVICES ERROR: {type(e).__name__}: {e}", 500
 
 @app.route("/status")
 def status():
